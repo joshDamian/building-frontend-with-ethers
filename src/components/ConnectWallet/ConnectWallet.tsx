@@ -7,7 +7,7 @@ interface ConnectWalletProps {
 const ConnectWallet: FC<ConnectWalletProps> = ({ connectWallet }) => {
   return (
     <div>
-      <button onClick={connectWallet} className="px-5 py-3 bg-blue-500 rounded-md">
+      <button onClick={connectWallet} className="px-5 py-3 text-white bg-blue-500 rounded-md">
         Connect Wallet
       </button>
     </div>
