@@ -1,40 +1,47 @@
 import { useState } from "react";
-import { Account } from "./components/Account";
 import { ConnectWallet } from "./components/ConnectWallet";
-import { Signer, ethers } from "ethers";
+import { ExploreEthers } from "./components/ExploreEthers";
+
+// utils for interacting with ethers
+import { connectWallet } from "./lib/ethers/connectWallet";
+import { getBalance } from "./lib/ethers/getBalance";
+import { transferEth } from "./lib/ethers/transferEth";
+import { deployContract } from "./lib/ethers/deployContract";
+import { transferToken } from "./lib/ethers/transferToken";
 
 function App() {
   const [account, setAccount] = useState<string>();
-  const [provider, setProvider] = useState<ethers.BrowserProvider>();
-  const [signer, setSigner] = useState<Signer>();
 
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      alert("Install a crypto wallet");
-      return;
+  const connect = async () => {
+    try {
+      const account = await connectWallet();
+      setAccount(account);
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+      alert("Something went wrong");
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const provider = new ethers.BrowserProvider(window.ethereum as any);
-    const signer = await provider.getSigner();
-
-    setProvider(provider);
-    setAccount(signer.address);
-    setSigner(signer);
   };
 
   const logout = () => {
-    setSigner(undefined);
     setAccount(undefined);
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center">
-      <div className="max-w-xl rounded-md shadow-sm bg-slate-200 mx-auto">
-        {account && signer && provider ? (
-          <Account provider={provider} signer={signer} account={account} logout={logout} />
+    <div className="flex justify-center items-center min-h-screen">
+      <div>
+        {account ? (
+          <ExploreEthers
+            account={account}
+            logout={logout}
+            transferDeployedToken={transferToken}
+            deployTokenContract={deployContract}
+            transferEth={transferEth}
+            getBalance={getBalance}
+          />
         ) : null}
-        {!account ? <ConnectWallet connectWallet={connectWallet} /> : null}
+        {!account ? <ConnectWallet connectWallet={connect} /> : null}
       </div>
     </div>
   );

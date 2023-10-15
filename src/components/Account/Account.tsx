@@ -1,67 +1,50 @@
-import { Provider, ethers, parseEther } from "ethers";
-import { Signer } from "ethers";
+import { AddressLike } from "ethers";
 import { FC, useEffect, useState } from "react";
 
 interface AccountProps {
   account: string;
-  provider: Provider;
-  signer: Signer;
+  getBalance: (account: AddressLike) => Promise<string>;
+  transferEth: (destination: AddressLike, amount: number) => Promise<boolean>;
   logout: () => void;
 }
 
-const Account: FC<AccountProps> = ({ account, logout, provider, signer }) => {
+const Account: FC<AccountProps> = ({ account, logout, getBalance, transferEth }) => {
   const [balance, setBalance] = useState<string>();
   const [amount, setAmount] = useState<number>(0);
   const [destination, setDestination] = useState<string>("");
 
   useEffect(() => {
-    async function getBalance() {
-      const balance = await provider.getBalance(account);
-      const formattedBalance = ethers.formatEther(balance);
-      setBalance(parseFloat(formattedBalance).toFixed(3));
+    async function loadBalance() {
+      const balance = await getBalance(account);
+      const roundedOffBalance = parseFloat(balance).toFixed(3);
+      setBalance(roundedOffBalance);
     }
 
-    getBalance();
-  }, [account, provider]);
-
-  const transferEth = async (amount: number, destinationWallet: string) => {
-    const tx = await signer.sendTransaction({
-      to: destinationWallet,
-      value: parseEther(`${amount}`), // parseEther converts amount to a bigint => amount * 10**18
-    });
-
-    const receipt = await tx.wait();
-
-    if (!receipt) {
-      alert("Transaction failed");
-      return;
-    }
-
-    alert(receipt.hash);
-  };
+    loadBalance();
+  }, [account, getBalance]);
 
   return (
-    <section className="space-y-4 p-5">
+    <section className="space-y-6">
       <div>
-        <h3 className="text-2xl font-medium mb-2">Account</h3>
+        <h3 className="mb-2 text-xl font-medium text-gray-700">Account</h3>
         <p className="flex items-center space-x-3">
           <span>{account}</span>
-          <button type="button" onClick={logout} className="bg-blue-500 text-white py-3 px-5 rounded-md">
+          <button type="button" onClick={logout} className="px-5 py-3 text-white bg-blue-500 rounded-md">
             logout
           </button>
         </p>
       </div>
       <div>
-        <h3 className="text-2xl mb-2">Balance</h3>
+        <h3 className="mb-2 text-xl text-gray-700">Balance</h3>
         <p>{balance ? `${balance} ETH` : "Loading balance..."}</p>
       </div>
       <div>
-        <h3 className="text-2xl mb-2">Transfer Eth</h3>
+        <h3 className="mb-2 text-xl text-gray-700">Transfer Eth</h3>
         <div>
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              await transferEth(amount, destination);
+              await transferEth(destination, amount);
             }}
             className="space-y-3"
           >
@@ -71,7 +54,7 @@ const Account: FC<AccountProps> = ({ account, logout, provider, signer }) => {
                 value={amount}
                 onChange={(e) => setAmount(e.currentTarget.valueAsNumber)}
                 type="number"
-                className="w-full border border-slate-300 rounded-md p-4"
+                className="p-4 w-full rounded-md border border-slate-300"
                 step="0.0001"
                 placeholder="Enter amount"
               />
@@ -82,12 +65,12 @@ const Account: FC<AccountProps> = ({ account, logout, provider, signer }) => {
                 value={destination}
                 onChange={(e) => setDestination(e.currentTarget.value)}
                 type="text"
-                className="w-full border border-slate-300 rounded-md p-4"
+                className="p-4 w-full rounded-md border border-slate-300"
                 placeholder="Enter wallet address"
               />
             </div>
             <div className="flex justify-end">
-              <button className="py-3 rounded-md px-5 text-white bg-blue-500" type="submit">
+              <button className="px-5 py-3 text-white bg-blue-500 rounded-md" type="submit">
                 Send
               </button>
             </div>
