@@ -1,5 +1,8 @@
 import { FC, useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { getContract } from "../../lib/ethers/contract";
+import { Transfer } from "../types";
+import { formatEther } from "ethers";
 
 interface ContractInteractionProps {
   deployContract: () => Promise<string>;
@@ -10,6 +13,16 @@ const ContractInteraction: FC<ContractInteractionProps> = ({ deployContract, tra
   const [amount, setAmount] = useState<number>(0);
   const [destination, setDestination] = useState<string>("");
   const [deployedTokenAddress, setDeployedTokenAddress] = useLocalStorage("deployedToken", "");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_, setTransfers] = useLocalStorage<Array<Transfer>>("transfers", []);
+
+  const contract = getContract(deployedTokenAddress);
+  const eventName = "Transfer";
+
+  contract.on(eventName, (from, to, value) => {
+    const transferEvent = { from, to, value: formatEther(value) };
+    setTransfers((prev) => [...prev, transferEvent]);
+  });
 
   return (
     <div className="space-y-6">

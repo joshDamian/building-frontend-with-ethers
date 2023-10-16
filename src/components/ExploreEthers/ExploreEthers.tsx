@@ -2,6 +2,7 @@ import { ComponentProps, FC } from "react";
 import { Account } from "../Account";
 import { ContractInteraction } from "../ContractInteractions";
 import * as Tabs from "@radix-ui/react-tabs";
+import { ContractEvents } from "../ContractEvents/ContractEvents";
 
 type AccountProps = ComponentProps<typeof Account>;
 type ContractInteractionProps = ComponentProps<typeof ContractInteraction>;
@@ -60,7 +61,9 @@ const ExploreEthers: FC<ExploreEthersProps> = ({
       <Tabs.Content
         className="grow p-5 bg-white rounded-b-md outline-none focus:shadow-[0_0_0_2px] focus:shadow-black"
         value="tab3"
-      ></Tabs.Content>
+      >
+        <ContractEvents />
+      </Tabs.Content>
     </Tabs.Root>
   );
 };
